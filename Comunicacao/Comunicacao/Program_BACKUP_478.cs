@@ -1,8 +1,16 @@
-using SistemasOperacionais;
+<<<<<<< HEAD
+﻿using SistemasOperacionais;
 
 /*
 int n = 100;
-List<int> items = new();
+=======
+﻿using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using SistemasOperacionais;
+
+/*int n = 100;
+    List<int> items = new();
+>>>>>>> dev-historico
 
 Semaforo semaforo = new();
 semaforo.empty = n;
@@ -13,6 +21,7 @@ Consumidor consumidor = new Consumidor(2);
 kernel.PopulateProcessQueue(produtor);
 kernel.PopulateProcessQueue(consumidor);
 
+<<<<<<< HEAD
 kernel.ProdutorComunicacao(items, semaforo, produtor, false);
 */
 
@@ -27,9 +36,8 @@ FCFS fcfs = new FCFS();
 
 Kernel.Escalonar(sjf);
 Kernel.Escalonar(fcfs);
-
-
-Kernel.ProdutorComunicacao(items, semaforo, produtor, false);
+=======
+kernel.ProdutorComunicacao(items, semaforo, produtor, false);*/
 
 Resultado r1 = new Resultado();
 Resultado r2 = new Resultado();
@@ -56,3 +64,4 @@ for (int i = 0; i < lista1.Count; i++)
 {
     Console.WriteLine(lista1[i].TipoEscalonamento);
 }
+>>>>>>> dev-historico
