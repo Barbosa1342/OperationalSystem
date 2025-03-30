@@ -1,17 +1,88 @@
-﻿namespace Comunicacao
+﻿namespace SistemasOperacionais
 {
-    internal class Kernel
+    static class Kernel
     {
-        List<Processo> processos = new List<Processo>();
+        // recursos serao classees separadas
+        // para fins de teste esta assim
+        static float cpu = 300;
+        static float memoria = 300;
 
-        public void PopulateProcessQueue(Processo processo)
+        // espaco de armazenamento compartilhado
+        static List<int> items = new();
+
+        static List<Processo> processos = new List<Processo>();
+
+        static public void Escalonar(Escalonador escalonador)
         {
-            processo.Estado = "Ready";
-            Console.WriteLine(processo.ProcID + ": " + processo.Estado);
+            escalonador.Escalonar(processos);
+        }
+
+        static public void PopulateProcessQueue(Processo processo)
+        {
             processos.Add(processo);
         }
 
-        public void ProdutorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
+        static public void ExecutarProcesso(Processo processo, Escalonador escalonador)
+        {
+            if (ChecarCPU(processo, cpu) && ChecarMemoria(processo, memoria))
+            {
+                AlocarCPU(processo, cpu);
+                AlocarMemoria(processo, memoria);
+
+                processo.Acao(items);
+                escalonador.TerminarProcesso();
+            }
+            else
+            {
+                escalonador.InterromperProcesso();
+            }
+        }
+
+        static public void TerminarProcesso(Processo processo, Escalonador escalonador)
+        {
+            DesalocarCPU(processo, cpu);
+            DesalocarMemoria(processo, memoria);
+        }
+
+        static public bool ChecarMemoria(Processo processo, float memoria)
+        {
+            if (processo.TempoExecucao < memoria)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        static public bool ChecarCPU(Processo processo, float cpu)
+        {
+            if (processo.TempoExecucao < cpu)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        static public void AlocarMemoria(Processo processo, float memoria)
+        {
+            memoria -= processo.MemoriaAlocada;
+        }
+
+        static public void AlocarCPU(Processo processo, float cpu)
+        {
+            cpu -= processo.TempoExecucao;
+        }
+
+        static public void DesalocarMemoria(Processo processo, float memoria)
+        {
+            memoria += processo.MemoriaAlocada;
+        }
+
+        static public void DesalocarCPU(Processo processo, float cpu)
+        {
+            cpu += processo.TempoExecucao;
+        }
+
+        static public void ProdutorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
         {
             if (!(processo is Produtor))
             {
@@ -62,7 +133,7 @@
             }
         }
 
-        public void ConsumidorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
+        static public void ConsumidorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
         {
             if (!(processo is Consumidor))
             {
