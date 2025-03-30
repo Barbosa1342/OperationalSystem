@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System;
-using System.Collections.Generic;
-
-namespace Comunicacao
+﻿namespace Comunicacao
 {
     public class Memoria : Recurso
     {
-        public int PosicoesOcupadas { get; private set; }
+        private int posicoesOcupadas;
+        private Dictionary<string, int> posicoesMemoria = new();  // Mapeamento da posição para endereço
 
-        public Memoria(double memoriaTotal) : base(memoriaTotal, 0)
+        public int PosicoesOcupadas { get => posicoesOcupadas; set => posicoesOcupadas = value; }
+        public Dictionary<string, int> PosicoesMemoria { get => posicoesMemoria; set => posicoesMemoria = value; }
+
+        public Memoria(int memoriaTotal) : base(memoriaTotal)
         {
             PosicoesOcupadas = 0;
+            DefineMemoriaTotal(memoriaTotal);
         }
 
-        public override void Alocation(int quantidade)
+        public override void Alocacao(int quantidade)
         {
             if (ConsultarDisponibilidade(quantidade))
             {
                 PosicoesOcupadas += quantidade;
-                MemoriaTotal -= quantidade;
-                Disponibilidade = MemoriaTotal > 0;
+                RecursoTotal -= quantidade;
 
                 Console.WriteLine($"Memória alocada: {quantidade} posições ocupadas.");
             }
@@ -38,8 +33,26 @@ namespace Comunicacao
         {
             foreach (var pos in PosicoesMemoria)
             {
-                Console.WriteLine($"Posição: {pos.Key}, Endereço: {pos.Value}");
+                Console.WriteLine($"Endereco: {pos.Key}, Dado: {pos.Value}");
             }
+        }
+
+        public void InicializaMemoria(int quantidade)
+        {
+            PosicoesMemoria.Clear();
+            for (int i = 0; i < quantidade; i++)
+            {
+                string endereco = $"0x{i.ToString("X4")}";
+                PosicoesMemoria.Add(endereco, 0);
+            }
+            Console.WriteLine($"Memória inicializada com {quantidade} posições.");
+        }
+
+        public void DefineMemoriaTotal(int quantidade)
+        {
+            recursoTotal = quantidade;
+            InicializaMemoria(quantidade);
+            Console.WriteLine($"Memória total definida para {quantidade} posições.");
         }
     }
 }
