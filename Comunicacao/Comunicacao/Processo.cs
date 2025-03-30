@@ -1,4 +1,4 @@
-﻿namespace Comunicacao
+﻿namespace SistemasOperacionais
 {
     abstract class Processo
     {

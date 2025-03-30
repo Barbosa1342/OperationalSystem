@@ -1,4 +1,4 @@
-﻿namespace Comunicacao
+﻿namespace SistemasOperacionais
 {
     internal class Consumidor : Processo
     {
