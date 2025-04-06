@@ -31,6 +31,7 @@ Kernel.Escalonar(sjf);
 Kernel.Escalonar(fcfs);
 */
 
+/* ----------- TESTE GABRIEL -----------
 Resultado r1 = new Resultado();
 Resultado r2 = new Resultado();
 
@@ -56,3 +57,33 @@ for (int i = 0; i < lista1.Count; i++)
 {
     Console.WriteLine(lista1[i].TipoEscalonamento);
 }
+*/
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        GerenciadorDeMemoria gerenciador = new GerenciadorDeMemoria(1024);
+
+        // Criando processos usando sua classe Processo
+        Processo processo1 = new Produtor(1);
+        Processo processo2 = new Produtor(2);
+        Processo processo3 = new Consumidor(3);
+        Processo processo4 = new Consumidor(4);
+
+        // Alocar processos na memória
+        gerenciador.AlocarProcesso(processo1, 64);
+        gerenciador.AlocarProcesso(processo2, 128);
+        gerenciador.AlocarProcesso(processo3, 96);
+
+        // Mostrar as páginas após a alocação inicial
+        gerenciador.MostrarPaginas();
+
+        // Alocar um novo processo maior para forçar substituição
+        gerenciador.AlocarProcesso(processo4, 512);
+
+        // Mostrar as páginas após a substituição
+        gerenciador.MostrarPaginas();
+    }
+}
+
