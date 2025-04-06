@@ -12,13 +12,13 @@ namespace SistemasOperacionais
                 return;
             }
 
-            listaOrdenada = listaProcessos.OrderBy(p => p.TempoExecucao).ToList();
+            listaReady = listaProcessos.OrderBy(p => p.TempoExecucao).ToList();
 
-            listaOrdenada.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
+            listaReady.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
 
-            Console.WriteLine("Shortest Job First: ");
-            CalcularTempo();
-            ExecutarProcesso();
+            //Console.WriteLine("Shortest Job First: ");
+            //CalcularTempo("Shortest Job First");
+            AlocarProximoProcesso();
         }
     }
 }

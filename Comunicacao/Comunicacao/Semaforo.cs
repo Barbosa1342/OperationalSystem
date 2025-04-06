@@ -1,19 +1,19 @@
 ﻿namespace SistemasOperacionais
 {
-    internal class Semaforo
+    static internal class Semaforo
     {
-        public int mutex = 1;
-        public int empty = 0;
-        public int full = 0;
+        static public int mutex = 1;
+        static public int empty = 0;
+        static public int full = 0;
 
-        public Processo? Up(ref int semaforo, List<Processo> processos)
+        static public Processo? Up(ref int semaforo, List<Processo> processos)
         {
             semaforo++;
 
             return Kernel.GetRandomWaitingProcess(processos);
         }
 
-        public void Down(ref int semaforo, Processo processo)
+        static public void Down(ref int semaforo, Processo processo)
         {
             if (semaforo > 0)
             {

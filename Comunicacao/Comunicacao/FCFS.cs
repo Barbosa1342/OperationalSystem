@@ -10,12 +10,12 @@
                 return;
             }
 
-            listaOrdenada = listaProcessos.ToList();
-            listaOrdenada.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
+            listaReady = listaProcessos.ToList();
+            listaReady.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
 
-            Console.WriteLine("First Come First Served: ");
-            CalcularTempo();
-            ExecutarProcesso();
+            //Console.WriteLine("First Come First Served: ");
+            //CalcularTempo("First Come First Served");
+            AlocarProximoProcesso();
         }
     }
 }

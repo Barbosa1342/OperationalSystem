@@ -5,9 +5,10 @@
         public Produtor(int procID) : base(procID)
         {
         }
-        public override void Acao(List<int> items)
+        public override int Acao(List<int> items)
         {
             items.Add(1);
+            return 0;
         }
     }
 }

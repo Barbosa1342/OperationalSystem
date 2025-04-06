@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -45,5 +46,13 @@ namespace SistemasOperacionais
             return resultadosEncontrados;
         }
 
+        static public void Imprimir()
+        {
+            for (int i = 0; i < listaResultados.Count; i++)
+            {
+                Console.WriteLine("Escalonador: " + listaResultados[i].TipoEscalonamento);
+                Console.WriteLine("ID: " + listaResultados[i].IDProcessos);
+            }
+        }
     }
 }

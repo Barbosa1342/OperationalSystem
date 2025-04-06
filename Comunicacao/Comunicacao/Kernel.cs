@@ -22,20 +22,43 @@
             processos.Add(processo);
         }
 
-        static public void ExecutarProcesso(Processo processo, Escalonador escalonador)
+        static public bool AlocarProcesso(Processo processo)
         {
             if (ChecarCPU(processo, cpu) && ChecarMemoria(processo, memoria))
             {
                 AlocarCPU(processo, cpu);
                 AlocarMemoria(processo, memoria);
 
-                processo.Acao(items);
-                escalonador.TerminarProcesso();
+                return true;
+            }
+
+            return false;
+        }
+
+        static public int ExecutarProcesso(Processo processo, Escalonador escalonador)
+        {
+            if (AlocarProcesso(processo))
+            {
+                Console.WriteLine();
+                Console.WriteLine(processo.ProcID + ": Executando - " + processo.Indice);
+                if (processo.Acao(items) == 0)
+                {
+                    escalonador.TerminarProcesso();
+                    return 0;
+                }
+                else
+                {
+                    Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
+                    // Atualiza o estado e salva
+                    processo.Indice += 1;
+                    return 1;
+                }
             }
             else
             {
                 escalonador.InterromperProcesso();
-            }
+                return -1;
+            }            
         }
 
         static public void TerminarProcesso(Processo processo, Escalonador escalonador)
@@ -82,7 +105,7 @@
             cpu += processo.TempoExecucao;
         }
 
-        static public void ProdutorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
+        static public void ProdutorComunicacao(List<int> items, Processo processo, bool isUp)
         {
             if (!(processo is Produtor))
             {
@@ -92,14 +115,14 @@
 
             while (true)
             {
-                semaforo.Down(ref semaforo.mutex, processo);
+                Semaforo.Down(ref Semaforo.mutex, processo);
 
                 if (processo.Estado == "Ready")
                 {
                     return;
                 }
 
-                semaforo.Down(ref semaforo.empty, processo);
+                Semaforo.Down(ref Semaforo.empty, processo);
 
                 if (processo.Estado == "Ready")
                 {
@@ -111,10 +134,10 @@
                 Processo? upProcess = null;
                 if (!isUp)
                 {
-                    upProcess = semaforo.Up(ref semaforo.mutex, processos);
+                    upProcess = Semaforo.Up(ref Semaforo.mutex, processos);
                 }
              
-                semaforo.Up(ref semaforo.full, processos);
+                Semaforo.Up(ref Semaforo.full, processos);
 
                 processo.Estado = "Terminated";
                 Console.WriteLine(processo.ProcID + ": " + processo.Estado);
@@ -123,17 +146,17 @@
                 {
                     if (upProcess is Produtor)
                     {
-                        ProdutorComunicacao(items, semaforo, upProcess, true);
+                        ProdutorComunicacao(items, upProcess, true);
                     }
                     else if (upProcess is Consumidor)
                     {
-                        ConsumidorComunicacao(items, semaforo, upProcess, true);
+                        ConsumidorComunicacao(items, upProcess, true);
                     }
                 }
             }
         }
 
-        static public void ConsumidorComunicacao(List<int> items, Semaforo semaforo, Processo processo, bool isUp)
+        static public void ConsumidorComunicacao(List<int> items, Processo processo, bool isUp)
         {
             if (!(processo is Consumidor))
             {
@@ -143,14 +166,14 @@
 
             while (true)
             {
-                semaforo.Down(ref semaforo.full, processo);
+                Semaforo.Down(ref Semaforo.full, processo);
 
                 if (processo.Estado == "Ready")
                 {
                     return;
                 }
 
-                semaforo.Down(ref semaforo.mutex, processo);
+                Semaforo.Down(ref Semaforo.mutex, processo);
 
                 if (processo.Estado == "Ready")
                 {
@@ -162,10 +185,10 @@
                 Processo? upProcess = null;
                 if (!isUp)
                 {
-                    upProcess = semaforo.Up(ref semaforo.mutex, processos);
+                    upProcess = Semaforo.Up(ref Semaforo.mutex, processos);
                 }
 
-                semaforo.Up(ref semaforo.empty, processos);
+                Semaforo.Up(ref Semaforo.empty, processos);
 
                 processo.Estado = "Terminated";
                 Console.WriteLine(processo.ProcID + ": " + processo.Estado);
@@ -174,11 +197,11 @@
                 {
                     if (upProcess is Produtor)
                     {
-                        ProdutorComunicacao(items, semaforo, upProcess, true);
+                        ProdutorComunicacao(items, upProcess, true);
                     }
                     else if (upProcess is Consumidor)
                     {
-                        ConsumidorComunicacao(items, semaforo, upProcess, true);
+                        ConsumidorComunicacao(items, upProcess, true);
                     }
                 }
             }

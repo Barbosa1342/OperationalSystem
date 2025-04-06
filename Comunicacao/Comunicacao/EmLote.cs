@@ -13,18 +13,22 @@ namespace SistemasOperacionais
             Random random = new Random();
             tempoExecucao = random.Next(5, 21);
             memoriaAlocada = random.Next(5, 21);
+
+            Indice = 0;
         }
 
-        public override void Acao(List<int> items)
+        public override int Acao(List<int> items)
         {
-            items.Add(0);
-
-            Console.WriteLine("\nExecucao: ");
-            for (int i = 0; i < tempoExecucao; i++)
+            if (Indice < acoes.Count)
             {
-                Console.WriteLine(i + 1);
+                items.Add(Indice);
+
+                return 1;
             }
-            Console.WriteLine("");
+            else
+            {
+                return 0;
+            }
         }
     }
 }
