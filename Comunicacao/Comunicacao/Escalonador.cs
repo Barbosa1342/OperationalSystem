@@ -35,6 +35,7 @@ namespace SistemasOperacionais
         protected List<Processo> listaReady = new List<Processo>();
         protected List<Processo> listaRunning = new List<Processo>();
         protected Processo processoAtual;
+        protected string tipoEscalonador;
 
         abstract public void Escalonar(List<Processo> listaProcessos);
 
@@ -105,13 +106,16 @@ namespace SistemasOperacionais
             AlocarProximoProcesso();
         }
 
-        public void CalcularTempo(string tipoEscalonador)
+        public void CalcularTempo(List<Processo> listaProcessos)
         {
             float tempoEsperaTotal = 0.0f;
             float tempoProcessamentoTotal = 0.0f;
             //float tempoExecucaoTotal = 0.0f;
 
-            foreach (Processo processo in listaReady)
+            // Futuramente:
+            // Buscar processos com o mesmo tipo de escalonador
+            // e realizar os calculos sem a necessidade de uma lista
+            foreach (Processo processo in listaProcessos)
             {
                 tempoEsperaTotal += tempoProcessamentoTotal;
                 tempoProcessamentoTotal += processo.TempoExecucao;
@@ -124,6 +128,58 @@ namespace SistemasOperacionais
             }
             //tempoExecucaoTotal = tempoEsperaTotal + tempoProcessamentoTotal;
             //Console.WriteLine("Tempo de Execucao Total: " + tempoProcessamentoTotal);
+        }
+
+        public void CalcularTempoEscalonador()
+        {
+            List<Resultado> resultados = Historico.buscaPorEscalonador(tipoEscalonador);
+
+            if (resultados.Count == 0)
+            {
+                return;
+            }
+
+            int contagem = resultados.Count();
+            float tempoEsperaMaximo = 0;
+            float tempoEsperaMinimo = resultados[contagem - 1].TempoEspera;
+            float tempoExecucaoMaximo = 0;
+
+            foreach (Resultado res in resultados)
+            {
+                float tempoEspera = res.TempoEspera;
+                if (tempoEspera < tempoEsperaMinimo && tempoEspera != 0)
+                {
+                    tempoEsperaMinimo = tempoEspera;
+                }
+
+                if (tempoEspera > tempoEsperaMaximo)
+                {
+                    tempoEsperaMaximo = tempoEspera;
+                }
+
+                if (res.TempoExecucao > tempoExecucaoMaximo)
+                {
+                    tempoExecucaoMaximo = res.TempoExecucao;
+                }
+            }
+            
+            float tempoMedio = tempoEsperaMaximo / contagem;
+            float vazao = contagem / tempoExecucaoMaximo;
+
+            Console.WriteLine("Resultados do Escalonador " + tipoEscalonador);
+            Console.WriteLine("Tempo Minimo de Espera: " + tempoEsperaMinimo);
+            Console.WriteLine("Tempo Maximo de Espera: " + tempoEsperaMaximo);
+            Console.WriteLine("Tempo Medio de Espera: " + tempoMedio);
+            Console.WriteLine("Vazao: " + vazao);
+        }
+
+        public void Clonar(List<Processo> listaProcessos)
+        {
+            foreach (Processo p in listaProcessos)
+            {
+                Processo temp = new EmLote(p.ProcID, p.TempoExecucao, p.MemoriaAlocada, p.Acoes);
+                listaReady.Add(temp);
+            }
         }
     }
 

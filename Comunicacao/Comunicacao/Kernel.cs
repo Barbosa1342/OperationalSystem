@@ -37,28 +37,21 @@
 
         static public int ExecutarProcesso(Processo processo, Escalonador escalonador)
         {
-            if (AlocarProcesso(processo))
+            
+            Console.WriteLine();
+            Console.WriteLine(processo.ProcID + ": Executando - " + processo.Indice);
+            if (processo.Acao(items) == 0)
             {
-                Console.WriteLine();
-                Console.WriteLine(processo.ProcID + ": Executando - " + processo.Indice);
-                if (processo.Acao(items) == 0)
-                {
-                    escalonador.TerminarProcesso();
-                    return 0;
-                }
-                else
-                {
-                    Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
-                    // Atualiza o estado e salva
-                    processo.Indice += 1;
-                    return 1;
-                }
+                escalonador.TerminarProcesso();
+                return 0;
             }
             else
             {
-                escalonador.InterromperProcesso();
-                return -1;
-            }            
+                Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
+                // Atualiza o estado e salva
+                processo.Indice += 1;
+                return 1;
+            }        
         }
 
         static public void TerminarProcesso(Processo processo, Escalonador escalonador)
@@ -69,7 +62,7 @@
 
         static public bool ChecarMemoria(Processo processo, float memoria)
         {
-            if (processo.TempoExecucao < memoria)
+            if (processo.MemoriaAlocada < memoria)
             {
                 return true;
             }

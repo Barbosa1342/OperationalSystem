@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SistemasOperacionais
+﻿namespace SistemasOperacionais
 {
     static class Historico
     {
@@ -48,10 +40,53 @@ namespace SistemasOperacionais
 
         static public void Imprimir()
         {
+            if (listaResultados.Count == 0)
+            {
+                Console.WriteLine("Nenhum item foi encontrado!");
+                return;
+            }
+
             for (int i = 0; i < listaResultados.Count; i++)
             {
                 Console.WriteLine("Escalonador: " + listaResultados[i].TipoEscalonamento);
                 Console.WriteLine("ID: " + listaResultados[i].IDProcessos);
+                Console.WriteLine("Tempo de Execucao: " + listaResultados[i].TempoExecucao);
+                Console.WriteLine("Tempo de Espera: " + listaResultados[i].TempoEspera);
+            }
+        }
+
+        static public void Imprimir(string escalonador)
+        {
+            List<Resultado> resultadosEncontrados = buscaPorEscalonador(escalonador);
+
+            if (resultadosEncontrados.Count == 0)
+            {
+                Console.WriteLine("Nenhum item foi encontrado!");
+                return;
+            }
+
+            Console.WriteLine("Escalonador - " + escalonador);
+            for (int i = 0; i < resultadosEncontrados.Count; i++)
+            {   
+                Console.WriteLine("ID: " + resultadosEncontrados[i].IDProcessos);
+                Console.WriteLine("Tempo de Execucao: " + resultadosEncontrados[i].TempoExecucao);
+                Console.WriteLine("Tempo de Espera: " + resultadosEncontrados[i].TempoEspera);
+            }
+        }
+
+        static public void LimparResultados(string escalonador)
+        {
+            if (listaResultados.Count == 0)
+            {
+                return;
+            }
+
+            foreach (Resultado res in listaResultados)
+            {
+                if (res.TipoEscalonamento == escalonador)
+                {
+                    listaResultados.Remove(res);
+                }
             }
         }
     }

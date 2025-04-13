@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SistemasOperacionais
+﻿namespace SistemasOperacionais
 {
     internal class Resultado
     {
@@ -14,10 +8,10 @@ namespace SistemasOperacionais
         private float tempoExecucao;
         private float tempoEspera;
 
-        private float vazao; //soma do tempo de espera pelo tempo de execução
-        private float tempoMinimo;
-        private float tempoMedio;
-        private float tempoMaximo;
+        //private float vazao; //soma do tempo de espera pelo tempo de execução
+        //private float tempoMinimo;
+        //private float tempoMedio;
+        //private float tempoMaximo;
 
         public Resultado(string tipoEscalonamento, int idProcessos, float tempoExecucao, float tempoEspera)
         {
@@ -29,10 +23,10 @@ namespace SistemasOperacionais
 
         public string TipoEscalonamento { get => tipoEscalonamento; set => tipoEscalonamento = value; }
         public int IDProcessos { get => idProcessos; set => idProcessos = value; }
-        public float Vazao { get => vazao; set => vazao = value; }
+        /*public float Vazao { get => vazao; set => vazao = value; }
         public float TempoMinimo { get => tempoMinimo; set => tempoMinimo = value; }
         public float TempoMedio { get => tempoMedio; set => tempoMedio = value; }
-        public float TempoMaximo { get => tempoMaximo; set => tempoMaximo = value; }
+        public float TempoMaximo { get => tempoMaximo; set => tempoMaximo = value; }*/
         public float TempoExecucao { get => tempoExecucao; set => tempoExecucao = value; }
         public float TempoEspera { get => tempoEspera; set => tempoEspera = value; }
     }

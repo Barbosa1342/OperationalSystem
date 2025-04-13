@@ -14,7 +14,13 @@ namespace SistemasOperacionais
             tempoExecucao = random.Next(5, 21);
             memoriaAlocada = random.Next(5, 21);
 
-            Indice = 0;
+            for (int i = 0; i < tempoExecucao; i++)
+            {
+                acoes.Add(i);
+            }
+        }
+        public EmLote(int procID, float tempoExecucao, int memoriaAlocada, List<int> acoes) : base(procID, tempoExecucao, memoriaAlocada, acoes)
+        {
         }
 
         public override int Acao(List<int> items)
