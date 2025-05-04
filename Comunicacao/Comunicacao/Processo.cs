@@ -44,5 +44,6 @@
         public List<int> Acoes { get => acoes; set => acoes = value; }
 
         abstract public int Acao(List<int> items);
+        abstract public int Acao();
     }
 }

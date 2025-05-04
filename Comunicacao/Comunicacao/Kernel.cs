@@ -40,10 +40,17 @@
             
             Console.WriteLine();
             Console.WriteLine(processo.ProcID + ": Executando - " + processo.Indice);
-            if (processo.Acao(items) == 0)
+
+            int resultado = processo.Acao(items);
+            if (resultado == 0)
             {
                 escalonador.TerminarProcesso();
                 return 0;
+            }else if(resultado == -1)
+            {
+                Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
+                // Remover da lista de execução e retornar a lista ready
+                return -1;
             }
             else
             {
@@ -96,133 +103,6 @@
         static public void DesalocarCPU(Processo processo, float cpu)
         {
             cpu += processo.TempoExecucao;
-        }
-
-        static public void ProdutorComunicacao(List<int> items, Processo processo, bool isUp)
-        {
-            if (!(processo is Produtor))
-            {
-                Console.WriteLine("Processo executado de maneira incorreta.");
-                return;
-            }
-
-            while (true)
-            {
-                Semaforo.Down(ref Semaforo.mutex, processo);
-
-                if (processo.Estado == "Ready")
-                {
-                    return;
-                }
-
-                Semaforo.Down(ref Semaforo.empty, processo);
-
-                if (processo.Estado == "Ready")
-                {
-                    return;
-                }
-
-                processo.Acao(items);
-
-                Processo? upProcess = null;
-                if (!isUp)
-                {
-                    upProcess = Semaforo.Up(ref Semaforo.mutex, processos);
-                }
-             
-                Semaforo.Up(ref Semaforo.full, processos);
-
-                processo.Estado = "Terminated";
-                Console.WriteLine(processo.ProcID + ": " + processo.Estado);
-
-                if (upProcess != null)
-                {
-                    if (upProcess is Produtor)
-                    {
-                        ProdutorComunicacao(items, upProcess, true);
-                    }
-                    else if (upProcess is Consumidor)
-                    {
-                        ConsumidorComunicacao(items, upProcess, true);
-                    }
-                }
-            }
-        }
-
-        static public void ConsumidorComunicacao(List<int> items, Processo processo, bool isUp)
-        {
-            if (!(processo is Consumidor))
-            {
-                Console.WriteLine("Processo executado de maneira incorreta.");
-                return;
-            }
-
-            while (true)
-            {
-                Semaforo.Down(ref Semaforo.full, processo);
-
-                if (processo.Estado == "Ready")
-                {
-                    return;
-                }
-
-                Semaforo.Down(ref Semaforo.mutex, processo);
-
-                if (processo.Estado == "Ready")
-                {
-                    return;
-                }
-
-                processo.Acao(items);
-
-                Processo? upProcess = null;
-                if (!isUp)
-                {
-                    upProcess = Semaforo.Up(ref Semaforo.mutex, processos);
-                }
-
-                Semaforo.Up(ref Semaforo.empty, processos);
-
-                processo.Estado = "Terminated";
-                Console.WriteLine(processo.ProcID + ": " + processo.Estado);
-
-                if (upProcess != null)
-                {
-                    if (upProcess is Produtor)
-                    {
-                        ProdutorComunicacao(items, upProcess, true);
-                    }
-                    else if (upProcess is Consumidor)
-                    {
-                        ConsumidorComunicacao(items, upProcess, true);
-                    }
-                }
-            }
-        }
-
-        static public Processo? GetRandomWaitingProcess(List<Processo> processos)
-        {
-            List<int> indexes = new List<int>();
-
-            int index = 0;
-            foreach (Processo processo in processos)
-            {
-                if (processo.Estado == "Ready")
-                {
-                    indexes.Add(index);
-                }
-                index++;
-            }
-
-            if (indexes.Count == 0)
-            {
-                return null;
-            }
-
-            Random random = new Random();
-            int randomIndex = indexes[random.Next(indexes.Count())];
-
-            return processos[randomIndex];
         }
     }
 }

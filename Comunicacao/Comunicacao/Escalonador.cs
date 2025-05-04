@@ -34,6 +34,7 @@ namespace SistemasOperacionais
         // lista reordenada
         protected List<Processo> listaReady = new List<Processo>();
         protected List<Processo> listaRunning = new List<Processo>();
+        protected List<Processo> listaWaiting = new List<Processo>();
         protected Processo processoAtual;
         protected string tipoEscalonador;
 
@@ -79,10 +80,16 @@ namespace SistemasOperacionais
 
             processoAtual = listaRunning[0];
             listaRunning.Remove(processoAtual);
-            
-            if (Kernel.ExecutarProcesso(processoAtual, this) == 1)
+
+            int resultado = Kernel.ExecutarProcesso(processoAtual, this);
+            if (resultado == 1)
             {
                 listaRunning.Add(processoAtual);
+            }
+            else if (resultado == -1)
+            {
+                listaReady.Add(processoAtual);
+                //listaWaiting.Add(processoAtual);
             }
             AlocarProximoProcesso();
         }
@@ -94,6 +101,11 @@ namespace SistemasOperacionais
             Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
 
             AlocarProximoProcesso();
+        }
+
+        public void AguardarProcesso()
+        {
+            listaWaiting.Add(processoAtual);
         }
 
         public void TerminarProcesso()

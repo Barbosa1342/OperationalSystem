@@ -1,14 +1,7 @@
 ﻿namespace SistemasOperacionais
 {
-    internal class Produtor : Processo
+    static internal class Produtor
     {
-        public Produtor(int procID) : base(procID)
-        {
-        }
-        public override int Acao(List<int> items)
-        {
-            items.Add(1);
-            return 0;
-        }
+        
     }
 }

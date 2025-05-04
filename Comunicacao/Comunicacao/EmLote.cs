@@ -8,6 +8,9 @@ namespace SistemasOperacionais
 {
     internal class EmLote : Processo
     {
+        int indiceInicial;
+        bool emSemaforo = false;
+
         public EmLote(int procID) : base(procID)
         {
             Random random = new Random();
@@ -25,16 +28,26 @@ namespace SistemasOperacionais
 
         public override int Acao(List<int> items)
         {
-            if (Indice < acoes.Count)
-            {
-                items.Add(Indice);
+            int? teste;
 
-                return 1;
+            if (indice < acoes.Count())
+            {
+                if (!emSemaforo)
+                {
+                    indiceInicial = indice;
+                    emSemaforo = true;
+                }
+                return Semaforo.RecebeDados(indice - indiceInicial, this, out teste);
             }
             else
             {
                 return 0;
             }
+        }
+
+        public override int Acao()
+        {
+            throw new NotImplementedException();
         }
     }
 }

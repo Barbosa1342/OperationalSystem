@@ -17,6 +17,7 @@ kernel.ProdutorComunicacao(items, semaforo, produtor, false);
 Kernel.ProdutorComunicacao(items, semaforo, produtor, false);
 */
 
+
 SJF sjf = new SJF();
 FCFS fcfs = new FCFS();
 
