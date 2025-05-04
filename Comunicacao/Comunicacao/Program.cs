@@ -63,18 +63,23 @@ class Program
 {
     static void Main(string[] args)
     {
-        GerenciadorDeMemoria gerenciador = new GerenciadorDeMemoria(1024);
+        GerenciadorDeMemoria gerenciador = new GerenciadorDeMemoria(256);
 
         // Criando processos usando sua classe Processo
         Processo processo1 = new Produtor(1);
         Processo processo2 = new Produtor(2);
         Processo processo3 = new Consumidor(3);
         Processo processo4 = new Consumidor(4);
+        Processo processo5 = new Consumidor(5);
+
 
         // Alocar processos na memória
         gerenciador.AlocarProcesso(processo1, 64);
         gerenciador.AlocarProcesso(processo2, 128);
         gerenciador.AlocarProcesso(processo3, 96);
+        gerenciador.AlocarProcesso(processo4, 96);
+        gerenciador.AlocarProcesso(processo5, 55);
+
 
         // Mostrar as páginas após a alocação inicial
         gerenciador.MostrarPaginas();
@@ -84,6 +89,47 @@ class Program
 
         // Mostrar as páginas após a substituição
         gerenciador.MostrarPaginas();
+    }
+    public void AlocarProcesso(Processo processo, int tamanho)
+    {
+        int paginasNecessarias = (int)Math.Ceiling(tamanho / (double)TamanhoPagina);
+        Console.WriteLine($"Processo {processo.ProcID} requer {paginasNecessarias} páginas ({tamanho} posições de memória).");
+
+        bool paginasDisponiveis = true;
+
+        // Verifica se há páginas livres suficientes
+        foreach (var pagina in Paginas)
+        {
+            if (pagina.EmUso && pagina.ProcID != processo.ProcID)
+            {
+                paginasDisponiveis = false;
+                break;
+            }
+        }
+
+        if (!paginasDisponiveis)
+        {
+            Console.WriteLine($"Processo {processo.ProcID} entrou em estado de 'Waiting' porque as páginas necessárias estão ocupadas.");
+            processo.Estado = "Waiting";
+            return;
+        }
+
+        // Aloca as páginas se disponíveis
+        for (int i = 0; i < paginasNecessarias; i++)
+        {
+            Pagina pagina = ObterPaginaLivre(processo);
+            if (pagina != null)
+            {
+                Relogio.Enqueue(pagina);
+                Console.WriteLine($"Página {pagina.Numero} alocada para o processo {processo.ProcID}.");
+            }
+            else
+            {
+                SubstituirPagina(processo);
+            }
+        }
+
+        processo.Estado = "Running"; // Atualiza o estado do processo para "Running"
     }
 }
 
