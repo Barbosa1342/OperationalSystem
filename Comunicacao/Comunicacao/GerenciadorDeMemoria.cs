@@ -9,11 +9,11 @@ namespace SistemasOperacionais
     // Classe que gerencia a memória utilizando paginação e algoritmo de substituição de páginas (Clock)
     public class GerenciadorDeMemoria
     {
-        private const int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
-        private int MemoriaTotal; // Armazena a quantidade total de memória disponível
-        private int NumeroPaginas; // Calcula o número total de páginas disponíveis na memória
-        private List<Pagina> Paginas; // Lista de todas as páginas disponíveis na memória
-        private Queue<Pagina> Relogio; // Fila de páginas usada pelo algoritmo de Clock
+        protected int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
+        protected int MemoriaTotal; // Armazena a quantidade total de memória disponível
+        protected int NumeroPaginas; // Calcula o número total de páginas disponíveis na memória
+        protected List<Pagina> Paginas; // Lista de todas as páginas disponíveis na memória
+        protected Queue<Pagina> Relogio; // Fila de páginas usada pelo algoritmo de Clock
 
         // Construtor da classe que inicializa as páginas e o algoritmo de Clock
         public GerenciadorDeMemoria(int memoriaTotal)

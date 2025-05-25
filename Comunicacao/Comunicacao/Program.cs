@@ -1,5 +1,6 @@
 using SistemasOperacionais;
 
+
 /*
 int n = 100;
 List<int> items = new();
@@ -58,7 +59,7 @@ for (int i = 0; i < lista1.Count; i++)
     Console.WriteLine(lista1[i].TipoEscalonamento);
 }
 */
-
+/*
 class Program
 {
     static void Main(string[] args)
@@ -90,46 +91,49 @@ class Program
         // Mostrar as páginas após a substituição
         gerenciador.MostrarPaginas();
     }
-    public void AlocarProcesso(Processo processo, int tamanho)
+}
+*/
+
+
+namespace SistemasOperacionais
+{
+    class Program
     {
-        int paginasNecessarias = (int)Math.Ceiling(tamanho / (double)TamanhoPagina);
-        Console.WriteLine($"Processo {processo.ProcID} requer {paginasNecessarias} páginas ({tamanho} posições de memória).");
-
-        bool paginasDisponiveis = true;
-
-        // Verifica se há páginas livres suficientes
-        foreach (var pagina in Paginas)
+        static void Main(string[] args)
         {
-            if (pagina.EmUso && pagina.ProcID != processo.ProcID)
-            {
-                paginasDisponiveis = false;
-                break;
-            }
-        }
+            // Inicializa o gerenciador de arquivos com 8 blocos
+            var gerenciador = new GerenciadorArquivo(8);
 
-        if (!paginasDisponiveis)
-        {
-            Console.WriteLine($"Processo {processo.ProcID} entrou em estado de 'Waiting' porque as páginas necessárias estão ocupadas.");
-            processo.Estado = "Waiting";
-            return;
-        }
+            Console.WriteLine("== Teste de Fragmentação do Sistema de Arquivos ==");
 
-        // Aloca as páginas se disponíveis
-        for (int i = 0; i < paginasNecessarias; i++)
-        {
-            Pagina pagina = ObterPaginaLivre(processo);
-            if (pagina != null)
-            {
-                Relogio.Enqueue(pagina);
-                Console.WriteLine($"Página {pagina.Numero} alocada para o processo {processo.ProcID}.");
-            }
-            else
-            {
-                SubstituirPagina(processo);
-            }
-        }
+            // 1. Cria arquivos pequenos
+            gerenciador.CriarArquivo("a1", "12345678"); // ocupa 1 bloco
+            gerenciador.CriarArquivo("a2", "abcdefgh"); // ocupa 1 bloco
+            gerenciador.CriarArquivo("a3", "87654321"); // ocupa 1 bloco
+            gerenciador.Status();
 
-        processo.Estado = "Running"; // Atualiza o estado do processo para "Running"
+            // 2. Exclui um arquivo do meio
+            gerenciador.ExcluirArquivo("a2");
+            gerenciador.Status();
+
+            // 3. Cria um arquivo maior (precisa de 3 blocos)
+            gerenciador.CriarArquivo("a4", "11112222333344445555"); // 20 chars, ocupa 3 blocos
+            gerenciador.Status();
+
+            // 4. Lê os arquivos
+            gerenciador.LerArquivo("a1");
+            gerenciador.LerArquivo("a3");
+            gerenciador.LerArquivo("a4");
+
+            // 5. Exclui outro arquivo e cria mais um para aumentar a fragmentação
+            gerenciador.ExcluirArquivo("a1");
+            gerenciador.CriarArquivo("a5", "zzzzzzzzzzzzzzzzzzzz"); // 20 chars, ocupa 3 blocos
+            gerenciador.Status();
+
+            Console.WriteLine("== Fim do teste automático ==");
+
+            // Permite uso interativo após os testes
+            gerenciador.RunConsole();
+        }
     }
 }
-

@@ -9,7 +9,7 @@ namespace SistemasOperacionais
 {
     internal class MemoriaVirtual
     {
-        private const int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
+        private int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
         private int MemoriaTotal; // Armazena a quantidade total de memória disponível
         private int NumeroPaginas; // Calcula o número total de páginas disponíveis na memória
         private List<Pagina> Paginas; // Lista de todas as páginas disponíveis na memória
