@@ -88,8 +88,8 @@ namespace SistemasOperacionais
             }
             else if (resultado == -1)
             {
-                listaReady.Add(processoAtual);
-                //listaWaiting.Add(processoAtual);
+                listaWaiting.Add(processoAtual);
+                processoAtual.Estado = "Waiting";
             }
             AlocarProximoProcesso();
         }
@@ -106,6 +106,23 @@ namespace SistemasOperacionais
         public void AguardarProcesso()
         {
             listaWaiting.Add(processoAtual);
+            processoAtual.Estado = "Waiting";
+            Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
+
+            AlocarProximoProcesso();
+        }
+
+        public void AcordarProcesso(int procId)
+        {
+            foreach(Processo p in listaWaiting)
+            {
+                if (p.ProcID == procId){
+                    p.Estado = "Ready";
+                    listaReady.Add(p);
+
+                    break;
+                }
+            }
         }
 
         public void TerminarProcesso()

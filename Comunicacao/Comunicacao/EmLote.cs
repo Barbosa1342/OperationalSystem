@@ -10,6 +10,7 @@ namespace SistemasOperacionais
     {
         int indiceInicial;
         bool emSemaforo = false;
+        int dados;
 
         public EmLote(int procID) : base(procID)
         {
@@ -17,7 +18,7 @@ namespace SistemasOperacionais
             tempoExecucao = random.Next(5, 21);
             memoriaAlocada = random.Next(5, 21);
 
-            for (int i = 0; i < tempoExecucao; i++)
+            for (int i = 0; i < 10; i++)
             {
                 acoes.Add(i);
             }
@@ -26,28 +27,69 @@ namespace SistemasOperacionais
         {
         }
 
-        public override int Acao(List<int> items)
+        public override int Acao(out int? saida)
         {
-            int? teste;
+            saida = null;
 
             if (indice < acoes.Count())
             {
-                if (!emSemaforo)
+                int retorno = 1;
+
+                if (indice >= 0 && indice <= 4)
                 {
-                    indiceInicial = indice;
-                    emSemaforo = true;
+                    // o acesso ao semaforo pode ocorrer na entrada n, porem o registro dentro e 0 a 4
+                    if (!emSemaforo)
+                    {
+                        indiceInicial = indice;
+                        emSemaforo = true;
+                    }
+
+                    retorno = Semaforo.RecebeDados((indice - indiceInicial), this, out saida);                    
                 }
-                return Semaforo.RecebeDados(indice - indiceInicial, this, out teste);
+                if (indice >= 5 && indice <= 9)
+                {
+                    if (!emSemaforo)
+                    {
+                        indiceInicial = indice;
+                        emSemaforo = true;
+                    }
+
+                    retorno = Semaforo.InserirDados((indice - indiceInicial), this, dados, out saida);
+                }
+
+                
+                
+                if (retorno == 0)
+                {
+                    emSemaforo = false;
+                }
+                else if (retorno == -1)
+                {
+                    return -1;
+                }
+                else if (retorno == 1)
+                {
+                    if (saida != null)
+                    {
+                        // dados
+                        // pode ser adicionar a um arquivo                        
+                        dados = (int)saida;
+                        saida = null;
+                        // o kernel nao precisa desse dado
+
+                        //Console.WriteLine("Peguei dado: " + dados);
+                    }
+                }
+                // se retorno == 2 ou == 0
+                // e saida != nulo
+                // entao saida == id
+
+                return 1;
             }
             else
             {
                 return 0;
             }
-        }
-
-        public override int Acao()
-        {
-            throw new NotImplementedException();
         }
     }
 }

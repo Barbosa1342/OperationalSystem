@@ -42,8 +42,6 @@
         public int MemoriaAlocada { get => memoriaAlocada; set => memoriaAlocada = value; }
         public int Indice { get => indice; set => indice = value; }
         public List<int> Acoes { get => acoes; set => acoes = value; }
-
-        abstract public int Acao(List<int> items);
-        abstract public int Acao();
+        abstract public int Acao(out int? teste);
     }
 }

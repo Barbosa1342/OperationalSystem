@@ -7,9 +7,6 @@
         static float cpu = 300;
         static float memoria = 300;
 
-        // espaco de armazenamento compartilhado
-        static List<int> items = new();
-
         static List<Processo> processos = new List<Processo>();
 
         static public void Escalonar(Escalonador escalonador)
@@ -41,7 +38,8 @@
             Console.WriteLine();
             Console.WriteLine(processo.ProcID + ": Executando - " + processo.Indice);
 
-            int resultado = processo.Acao(items);
+            int? saida;
+            int resultado = processo.Acao(out saida);
             if (resultado == 0)
             {
                 escalonador.TerminarProcesso();
@@ -49,16 +47,29 @@
             }else if(resultado == -1)
             {
                 Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
-                // Remover da lista de execução e retornar a lista ready
+                // a acao nao foi finalizada
+                // o indice nao deve ser atualizado
+
+                // Remover da lista de execução e adicionado a lista waiting
                 return -1;
             }
             else
             {
+                if (saida != null)
+                {
+                    escalonador.AcordarProcesso((int)saida);
+                }
+
                 Console.WriteLine(processo.ProcID + ": Salvando - " + processo.Indice);
                 // Atualiza o estado e salva
                 processo.Indice += 1;
                 return 1;
             }        
+        }
+
+        static public void AcordarProcesso(Processo processo)
+        {
+
         }
 
         static public void TerminarProcesso(Processo processo, Escalonador escalonador)
