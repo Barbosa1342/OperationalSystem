@@ -16,7 +16,7 @@ namespace SistemasOperacionais
         {
             Random random = new Random();
             tempoExecucao = random.Next(5, 21);
-            memoriaAlocada = random.Next(5, 21);
+            memoriaAlocada = random.Next(32, 129);
 
             for (int i = 0; i < 10; i++)
             {
