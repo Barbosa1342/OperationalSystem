@@ -1,32 +1,14 @@
 using SistemasOperacionais;
 
-
-/*
-int n = 100;
-List<int> items = new();
-
-Semaforo semaforo = new();
-semaforo.empty = n;
-
-Produtor produtor = new Produtor(1);
-Consumidor consumidor = new Consumidor(2);
-
-kernel.PopulateProcessQueue(produtor);
-kernel.PopulateProcessQueue(consumidor);
-
-kernel.ProdutorComunicacao(items, semaforo, produtor, false);
-Kernel.ProdutorComunicacao(items, semaforo, produtor, false);
-*/
 namespace SistemasOperacionais
 {
     class Program
     {
+        static int ultimoId = 0;
         static void Main(string[] args)
         {
             SJF sjf = new SJF();
             FCFS fcfs = new FCFS();
-
-            int ultimoId = 0;
 
             while (true)
             {
@@ -44,7 +26,9 @@ namespace SistemasOperacionais
                     Console.WriteLine("5 - Exibir tempos FCFS");
                     Console.WriteLine("6 - Exibir Tempos Escalonadores");
                     Console.WriteLine("7 - Exibir Historico Completo");
-                    Console.WriteLine("8 - Encerrar");
+                    Console.WriteLine("8 - Exibir Paginacao Completo");
+                    Console.WriteLine("9 - Exibir Memoria Completa");
+                    Console.WriteLine("10 - Encerrar");
                     Console.Write("Escolha: ");
 
                     string? opcaoStr = Console.ReadLine();
@@ -53,12 +37,11 @@ namespace SistemasOperacionais
                         bool sucesso = Int32.TryParse(opcaoStr, out opcao);
                     }
                     Console.Clear();
-                } while (opcao < 1 || opcao > 8);
+                } while (opcao < 1 || opcao > 10);
 
                 if (opcao == 1)
                 {
-                    EmLote p1 = new EmLote(ultimoId);
-                    ultimoId++;
+                    MenuCriacao();
                 }
                 else if (opcao == 2)
                 {
@@ -94,51 +77,54 @@ namespace SistemasOperacionais
                 }
                 else if (opcao == 8)
                 {
+                    GerenciadorDeMemoria.MostrarPaginacao();
+                }
+                else if (opcao == 9)
+                {
+                    GerenciadorDeMemoria.ExibirPaginas();
+                }
+                else if (opcao == 10)
+                {
                     break;
                 }
 
-                Console.ReadKey();
-                Console.Clear();
+                if (opcao != 1)
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
             }
         }
+
+        static private void MenuCriacao()
+        {
+            EmLote p1 = new EmLote(ultimoId);
+            ultimoId++;
+
+            int opcao = 0;
+
+            do
+            {
+                Console.WriteLine("1 - Criar novo processo");
+                Console.WriteLine("2 - Sair");
+                Console.Write("Escolha: ");
+
+                string? opcaoStr = Console.ReadLine();
+                if (!string.IsNullOrEmpty(opcaoStr))
+                {
+                    bool sucesso = Int32.TryParse(opcaoStr, out opcao);
+                }
+                Console.Clear();
+            } while (opcao < 1 || opcao > 2);
+
+            if (opcao == 1)
+            {
+                MenuCriacao();
+            }
+        }
+
     }
 }
-
-/*
-class Program
-{
-    static void Main(string[] args)
-    {
-        GerenciadorDeMemoria gerenciador = new GerenciadorDeMemoria(256);
-
-        // Criando processos usando sua classe Processo
-        Processo processo1 = new Produtor(1);
-        Processo processo2 = new Produtor(2);
-        Processo processo3 = new Consumidor(3);
-        Processo processo4 = new Consumidor(4);
-        Processo processo5 = new Consumidor(5);
-
-
-        // Alocar processos na memória
-        gerenciador.AlocarProcesso(processo1, 64);
-        gerenciador.AlocarProcesso(processo2, 128);
-        gerenciador.AlocarProcesso(processo3, 96);
-        gerenciador.AlocarProcesso(processo4, 96);
-        gerenciador.AlocarProcesso(processo5, 55);
-
-
-        // Mostrar as páginas após a alocação inicial
-        gerenciador.MostrarPaginas();
-
-        // Alocar um novo processo maior para forçar substituição
-        gerenciador.AlocarProcesso(processo4, 512);
-
-        // Mostrar as páginas após a substituição
-        gerenciador.MostrarPaginas();
-    }
-}
-*/
-
 
 /*
     // Inicializa o gerenciador de arquivos com 8 blocos

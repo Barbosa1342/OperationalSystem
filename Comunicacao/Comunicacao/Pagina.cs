@@ -8,40 +8,62 @@ namespace SistemasOperacionais
 {
     public class Pagina
     {
-        public int Numero { get; private set; }
-        public int ProcID { get; set; } // Associado ao processo que usa a página
-        public bool EmUso { get; set; }
-        public bool Referenciada { get; set; }
-        private Dictionary<int, string> Enderecos;
+        private int tamanho; // cada pagina vai ter 32 linhas
+        private int numero;  // numero da pagina
+        private int procID; // dado do processo que esta usando a pagina
+        private bool emUso;
+        private bool referenciada; // usado no WClock
+        private Dictionary<int, string> enderecos;
 
         public Pagina(int numero, int tamanhoPagina, int enderecoInicial)
         {
-            Numero = numero;
-            ProcID = -1;
-            EmUso = false;
-            Referenciada = false;
-            Enderecos = new Dictionary<int, string>();
+            this.tamanho = tamanhoPagina;
+            this.numero = numero;
+            this.procID = -1; // comeca sem processo
+            this.emUso = false;
+            this.referenciada = false;
+            this.enderecos = new Dictionary<int, string>();
 
             InicializarEnderecos(enderecoInicial);
         }
 
-        public void InicializarEnderecos(int procID)
+        public int Tamanho { get => tamanho; set => tamanho = value; }
+        public int Numero { get => numero; set => numero = value; }
+        public int ProcID { get => procID; set => procID = value; }
+        public bool EmUso { get => emUso; set => emUso = value; }
+        public bool Referenciada { get => referenciada; set => referenciada = value; }
+        public Dictionary<int, string> Enderecos { get => enderecos; set => enderecos = value; }
+
+        public void InicializarEnderecos(int enderecoInicial)
         {
-            Enderecos.Clear();
-            for (int i = 0; i < 32; i++)
+            // inicializa os enderecos internos da pagina
+            
+            // objetivo:
+            // 0x1000
+            // 0x1032
+
+            // 0x2000
+            // 0x2032
+
+            // 0x3000
+            // 0x3032
+
+            enderecos.Clear();
+            for (int i = 0; i < tamanho; i++)
             {
-                string endereco = $"0x{(procID * 1000 + i).ToString("X4")}";
-                Enderecos.Add(i, endereco);
+                string endereco = $"0x{(enderecoInicial * 1000 + i).ToString("X4")}";
+                enderecos.Add(i, endereco);
             }
         }
 
         public void MostrarEnderecos()
         {
-            Console.WriteLine($"\nPágina {Numero} - Processo: {(ProcID == -1 ? "Nenhum" : ProcID.ToString())} - Em Uso: {EmUso}");
+            Console.WriteLine($"\nPágina {numero} - Processo: {(procID == -1 ? "Nenhum" : procID.ToString())} - Em Uso: {emUso}");
             Console.WriteLine("Endereços: ");
-            foreach (var endereco in Enderecos)
+
+            foreach (var endereco in enderecos)
             {
-                Console.WriteLine($"Posição {endereco.Key}: {endereco.Value} (Processo ID: {ProcID})");
+                Console.WriteLine($"Posição {endereco.Key}: {endereco.Value} (Processo ID: {procID})");
             }
         }
     }

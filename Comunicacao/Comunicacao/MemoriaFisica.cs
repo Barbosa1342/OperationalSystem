@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,95 +10,88 @@ namespace SistemasOperacionais
     // Classe que representa a memória física
     public class MemoriaFisica
     {
-        private List<MemoriaFisica> MemoriasFisicas; // Lista que armazena todas as memórias físicas
-        public int Indice { get; private set; } // Índice único da memória física
-        public int Tamanho { get; private set; } // Tamanho da memória física
-        public Pagina ReferenciaMemoriaVirtual { get; private set; } // Referência à página de memória virtual associada
+        private int tamanhoPagina; // Define o tamanho de cada página (32 posições de memória)
+        //private int numeroPaginasLivre; // Calcula o número total de páginas disponíveis na memória
 
-        // Construtor que inicializa a memória física com um índice e tamanho
-        public MemoriaFisica(int indice, int tamanho)
+        //private int memorialTotalLivre;
+        private List<Pagina> paginas;
+
+        public MemoriaFisica(int numeroPagina, int tamanhoPagina)
         {
-            Indice = indice; // Define o índice da memória física
-            Tamanho = tamanho; // Define o tamanho da memória física
+            this.tamanhoPagina = tamanhoPagina;
+
+            this.paginas = new List<Pagina>();
+
+            for (int i = 0; i < numeroPagina; i++)
+            {
+                paginas.Add(new Pagina(i, tamanhoPagina, i * tamanhoPagina));
+            }
+
+            Console.WriteLine($"Memória Fisica inicializada com {numeroPagina} páginas de {tamanhoPagina} endereços cada.");
         }
 
-        // Método para associar uma página de memória virtual a esta memória física
-        public void AssociarMemoriaVirtual(Pagina pagina)
+        public bool PaginaReferenciada(int numeroPagina)
         {
-            ReferenciaMemoriaVirtual = pagina; // Armazena a referência à página de memória virtual
+            bool temp = paginas[numeroPagina].Referenciada;
+
+            if (temp)
+            {
+                paginas[numeroPagina].Referenciada = false;
+            }
+
+            return temp;
         }
 
-        // Método para exibir informações sobre a memória física
-        public void MostrarInformacoes()
+        private Pagina? ObterPaginaLivre()
         {
-            Console.WriteLine($"Memória Física - Índice: {Indice}, Tamanho: {Tamanho}");
-            if (ReferenciaMemoriaVirtual != null) // Verifica se há uma página associada
+            foreach (var pagina in paginas)
             {
-                Console.WriteLine($"Referência à Memória Virtual: Página {ReferenciaMemoriaVirtual.Numero}");
-            }
-            else
-            {
-                Console.WriteLine("Nenhuma memória virtual associada.");
-            }
-        }
-        // Método que associa uma página de memória virtual a uma memória física específica
-        public void AssociarMemoriaFisica(int indice, Pagina pagina)
-        {
-            if (indice >= 0 && indice < MemoriasFisicas.Count) // Verifica se o índice é válido
-            {
-                MemoriasFisicas[indice].AssociarMemoriaVirtual(pagina); // Associa a página à memória física
-                Console.WriteLine($"Página {pagina.Numero} associada à memória física de índice {indice}.");
-            }
-            else
-            {
-                Console.WriteLine("Índice de memória física inválido."); // Mensagem de erro para índice inválido
-            }
-        }
-        //WSClock
-        public int WSClock()
-        {
-            int menorIndice = -1; // Inicializa o menor índice como -1 (não encontrado)
-            foreach (var memoria in MemoriasFisicas)
-            {
-                if (memoria.ReferenciaMemoriaVirtual != null && !memoria.ReferenciaMemoriaVirtual.EmUso)
+                if (!pagina.EmUso) // Verifica se a página está livre
                 {
-                    // Se a página não está em uso, verifica se é o menor índice
-                    if (menorIndice == -1 || memoria.Indice < menorIndice)
-                    {
-                        menorIndice = memoria.Indice; // Atualiza o menor índice
-                    }
+                    return pagina;
                 }
             }
-
-            if (menorIndice != -1)
-            {
-                Console.WriteLine($"Índice {menorIndice} selecionado para substituição.");
-            }
-            else
-            {
-                Console.WriteLine("Nenhuma memória física disponível para substituição.");
-            }
-
-            return menorIndice; // Retorna o menor índice encontrado ou -1 se nenhum foi encontrado
+            return null; // Retorna o numero de páginas livres
         }
 
-        // Método para substituir a memória física usando o WSClock
-        public void SubstituirMemoriaFisica(Pagina novaPagina)
+        public int AlocarProcesso(int procID, int numPagina)
         {
-            int indiceParaSubstituir = WSClock(); // Obtém o índice para substituição usando o WSClock
-
-            if (indiceParaSubstituir != -1)
+            Pagina? paginaLivre = ObterPaginaLivre();
+            if (paginaLivre != null)
             {
-                MemoriasFisicas[indiceParaSubstituir].AssociarMemoriaVirtual(novaPagina); // Substitui a página
-                Console.WriteLine($"Página {novaPagina.Numero} associada à memória física de índice {indiceParaSubstituir}.");
+                paginaLivre.EmUso = true; // marca a página como em uso
+                paginaLivre.ProcID = procID; // associa o processo atual à página.
+                paginaLivre.Referenciada = true; // marca a página como referenciada (foi recentemente acessada).
+                return paginaLivre.Numero;
             }
             else
             {
-                Console.WriteLine("Não foi possível substituir nenhuma memória física.");
+                paginas[numPagina].EmUso = true;
+                paginas[numPagina].ProcID = procID;
+                paginas[numPagina].Referenciada = true;
+                return numPagina;
             }
         }
-       
-        }
-        
-    }
 
+        public void DesalocarProcesso(int procID) // Libera espaço na memoria após finalização de processo.
+        {
+            foreach (var pagina in paginas)
+            {
+                if (pagina.ProcID == procID && pagina.EmUso) // Compara ID do processo com o salvo na memoria. 
+                {
+                    pagina.EmUso = false; // Marca a página como em uso.
+                    Console.WriteLine("Pagina Fisica " + pagina.Numero + " desalocada para o processo " + procID);
+                }
+            }
+        }
+        public void ExibirMemoria()
+        {
+            Console.WriteLine("Memoria Fisica: ");
+            foreach (Pagina pag in paginas)
+            {
+                pag.MostrarEnderecos();
+            }
+        }
+    }
+        
+}

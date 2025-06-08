@@ -94,6 +94,7 @@ namespace SistemasOperacionais
                 Random random = new Random();
                 int indice = random.Next(processosDown.Count());
                 id = processosDown[indice].ProcID;
+                processosDown.RemoveAt(indice);
 
                 // evita conflitos com o retorno
                 return 2;             

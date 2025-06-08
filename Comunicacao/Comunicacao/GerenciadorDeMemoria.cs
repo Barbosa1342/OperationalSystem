@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,101 +8,162 @@ using System.Threading.Tasks;
 namespace SistemasOperacionais
 {
     // Classe que gerencia a memória utilizando paginação e algoritmo de substituição de páginas (Clock)
-    public class GerenciadorDeMemoria
+    static public class GerenciadorDeMemoria
     {
-        protected int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
-        protected int MemoriaTotal; // Armazena a quantidade total de memória disponível
-        protected int NumeroPaginas; // Calcula o número total de páginas disponíveis na memória
-        protected List<Pagina> Paginas; // Lista de todas as páginas disponíveis na memória
-        protected Queue<Pagina> Relogio; // Fila de páginas usada pelo algoritmo de Clock
+        static private MemoriaVirtual memoriaVirtual;
+        static private MemoriaFisica memoriaFisica;
+        static private Dictionary<int, int> tabelaPaginacao; //num pagina fisica, num pagina virtual
+        static private Dictionary<int, int> relogio; //num pagina fisica, wsclock
+        static private int wsclock; // contagem
 
-        // Construtor da classe que inicializa as páginas e o algoritmo de Clock
-        public GerenciadorDeMemoria(int memoriaTotal)
+        static GerenciadorDeMemoria()
         {
-            MemoriaTotal = memoriaTotal; // Define a memória total do sistema
-            NumeroPaginas = memoriaTotal / TamanhoPagina; // Calcula o número de páginas possíveis na memória
-            Paginas = new List<Pagina>(); // Inicializa a lista de páginas vazia
-            Relogio = new Queue<Pagina>(); // Inicializa a fila de páginas para o algoritmo de Clock
+            int numeroPagina = 32;
+            int tamanhoPagina = 32;
 
-            // Cria cada página e a adiciona à lista
-            for (int i = 0; i < NumeroPaginas; i++)
+            wsclock = 1;
+            memoriaFisica = new MemoriaFisica(numeroPagina, tamanhoPagina);
+
+            int numeroPaginaVirtual = numeroPagina * 2;
+            memoriaVirtual = new MemoriaVirtual(numeroPaginaVirtual, tamanhoPagina);
+
+            tabelaPaginacao = new Dictionary<int, int>();
+            relogio = new Dictionary<int, int>();
+
+            InicializarPaginacao(numeroPagina);
+
+            for (int i = 0; i < numeroPagina; i++)
             {
-                Paginas.Add(new Pagina(i, TamanhoPagina, i * TamanhoPagina)); // Cria páginas com endereços inicializados
-            }
-
-            Console.WriteLine($"Memória inicializada com {NumeroPaginas} páginas de {TamanhoPagina} endereços cada.");
-        }
-
-        // Método para alocar um processo na memória
-        public void AlocarProcesso(Processo processo, int tamanho)
-        {
-            int paginasNecessarias = (int)Math.Ceiling(tamanho / (double)TamanhoPagina); // Calcula quantas páginas são necessárias para o processo
-            Console.WriteLine($"Processo {processo.ProcID} requer {paginasNecessarias} páginas ({tamanho} posições de memória).");
-
-            for (int i = 0; i < paginasNecessarias; i++)
-            {
-                Pagina pagina = ObterPaginaLivre(processo); // Procura uma página livre para o processo
-                if (pagina != null)
-                {
-                    Relogio.Enqueue(pagina); // Adiciona a página na fila do relógio
-                    Console.WriteLine($"Página {pagina.Numero} alocada para o processo {processo.ProcID}.");
-                }
-                else
-                {
-                    SubstituirPagina(processo); // Se não encontrar páginas livres, aplica o algoritmo de substituição
-                }
+                AtualizaRelogio(i);
             }
         }
 
-        // Método para encontrar uma página livre na memória
-        private Pagina ObterPaginaLivre(Processo processo)
+        static private void InicializarPaginacao(int numeroPagina)
         {
-            foreach (var pagina in Paginas)
+            for (int i = 0; i < numeroPagina; i++)
             {
-                if (!pagina.EmUso) // Verifica se a página está livre
-                {
-                    pagina.EmUso = true; // Marca a página como em uso
-                    pagina.ProcID = processo.ProcID; // Associa o processo atual à página
-                    pagina.Referenciada = true; // Marca a página como referenciada (foi recentemente acessada)
-                    return pagina; // Retorna a página encontrada
-                }
-            }
-            return null; // Retorna nulo se não encontrar páginas livres
-        }
-
-        // Método que substitui uma página usando o algoritmo de Clock
-        private void SubstituirPagina(Processo processo)
-        {
-            while (true)
-            {
-                Pagina paginaAtual = Relogio.Dequeue(); // Remove a primeira página da fila do relógio
-
-                if (!paginaAtual.Referenciada) // Se a página não foi acessada recentemente
-                {
-                    Console.WriteLine($"Página {paginaAtual.Numero} substituída pelo processo {processo.ProcID}.");
-                    paginaAtual.ProcID = processo.ProcID; // Atribui o processo atual à página substituída
-                    paginaAtual.Referenciada = true; // Marca a página como referenciada novamente
-                    paginaAtual.InicializarEnderecos(processo.ProcID); // Recria os endereços da página para o novo processo
-                    Relogio.Enqueue(paginaAtual); // Reinsere a página na fila do relógio
-                    return; // Finaliza o processo de substituição
-                }
-                else
-                {
-                    paginaAtual.Referenciada = false; // Reseta o bit de referência para falso
-                    Relogio.Enqueue(paginaAtual); // Reinsere a página no final da fila do relógio
-                }
+                // inicia a paginacao, com indice -1 para representar que ta livre
+                tabelaPaginacao.Add(i, -1);
             }
         }
 
-        // Método que exibe todas as páginas e seus endereços na memória
-        public void MostrarPaginas()
+        static private void AtualizaRelogio(int numFisico)
         {
-            Console.WriteLine("\n--- Estado da Memória ---");
-            foreach (var pagina in Paginas)
+            if (!relogio.TryAdd(numFisico, wsclock))
             {
-                pagina.MostrarEnderecos(); // Exibe cada página individualmente
+                relogio[numFisico] = wsclock;
             }
-            Console.WriteLine("-------------------------\n");
+            wsclock++;
+        }
+
+        static public void AssociarMemoria(int numVirtual, int numFisico)
+        {
+            // Nao verifica pagina livre
+            // A verificacao deve ser feita antes
+            if (!tabelaPaginacao.TryAdd(numFisico, numVirtual))
+            {
+                tabelaPaginacao[numFisico] = numVirtual;
+            }
+            AtualizaRelogio(numFisico);
+
+            Console.WriteLine($"Página {numVirtual} associada à memória física {numFisico}.");
+        }
+
+        static public void MostrarPaginacao()
+        {
+            string fisico = "Pagina Fisica";
+            string mVirtual = "Pagina Virtual";
+            Console.WriteLine($"{fisico, -20}{mVirtual, -20}");
+
+            foreach (var pag in tabelaPaginacao)
+            {
+                Console.WriteLine($"{pag.Key,-20}{pag.Value,-20}");
+            }
+        }
+
+        static public void ExibirPaginas()
+        {
+            memoriaVirtual.ExibirMemoria();
+            memoriaFisica.ExibirMemoria();
+        }
+
+        static public int WSClock()
+        {
+            int menorClock = relogio[0];
+            int numFisico = 0;
+
+            foreach (var pag in relogio)
+            {
+                if (pag.Value < menorClock)
+                {
+                    menorClock = pag.Value;
+                    numFisico = pag.Key;
+                }
+            }
+
+            if (!memoriaFisica.PaginaReferenciada(numFisico))
+            {
+                return numFisico;
+            }
+
+            return WSClock();
+        }
+
+        static public void SubstituirPagina(int numVirtual, int procID)
+        {
+            int numFisico = WSClock();
+
+            // caso haja uma pagina livre
+            // o numFisico vai ser a pagina livre
+            numFisico = memoriaFisica.AlocarProcesso(procID, numFisico);
+
+            AssociarMemoria(numVirtual, numFisico);
+        }
+
+        /*
+        Processo Alocado (Ready) -> Memoria Virtual
+        Processo Aguardando (Waiting) -> Memoria Virtual
+        Processo Executando (Running) -> Memoria Fisica
+        Processo Novo (New) -> Disco
+        Processo Terminando (Terminated) -> Desalocar das duas memorias (tirar o EmUso)
+         */
+
+        static public bool AlocarProcesso(Processo processo)
+        {
+            int procID = processo.ProcID;
+
+            if (processo.Estado == "New")
+            {
+                // Processo New indo para Ready
+                return memoriaVirtual.AlocarProcesso(processo);
+            }
+
+            if (processo.Estado == "Ready")
+            {
+                // Processo Ready indo para Running
+                foreach (int numPag in memoriaVirtual.BuscaProcesso(procID))
+                {
+                    SubstituirPagina(numPag, procID);
+                }
+                
+                return true;
+            }
+            return false;
+        }
+
+        static public bool DesalocarMemoriaFisica(Processo processo)
+        {        
+            memoriaFisica.DesalocarProcesso(processo.ProcID);
+
+            return true;
+        }
+
+        static public bool DesalocarMemoria(Processo processo)
+        {
+            memoriaFisica.DesalocarProcesso(processo.ProcID);
+            memoriaVirtual.DesalocarProcesso(processo.ProcID);
+
+            return true;
         }
     }
 }

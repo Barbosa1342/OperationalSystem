@@ -17,9 +17,20 @@ namespace SistemasOperacionais
             }
 
             Clonar(listaProcessos);
-            listaReady = listaReady.OrderBy(p => p.TempoExecucao).ToList();
+            listaNew = listaNew.OrderBy(p => p.TempoExecucao).ToList();
 
-            listaReady.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
+            // ToList cria uma copia
+            // caso contrario, excecao por remover elementos da lista iterada
+            foreach (Processo processo in listaNew.ToList())
+            {
+                if (Kernel.AlocarProcesso(processo))
+                {
+                    processo.Estado = "Ready";
+                    Console.WriteLine(processo.ProcID + ": " + processo.Estado);
+                    listaReady.Add(processo);
+                    listaNew.Remove(processo);
+                }
+            }
 
             //Console.WriteLine("Shortest Job First: ");
             //CalcularTempo("Shortest Job First");

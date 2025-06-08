@@ -16,7 +16,18 @@
             }
 
             Clonar(listaProcessos);
-            listaReady.ForEach(p => { p.Estado = "Ready"; Console.WriteLine(p.ProcID + ": " + p.Estado); });
+
+            foreach (Processo processo in listaNew.ToList())
+            {
+                if (Kernel.AlocarProcesso(processo))
+                {
+                    processo.Estado = "Ready";
+                    Console.WriteLine(processo.ProcID + ": " + processo.Estado);
+                    listaReady.Add(processo);
+                    listaNew.Remove(processo);
+                }
+            }
+
 
             CalcularTempo(listaReady);
             //Console.WriteLine("First Come First Served: ");

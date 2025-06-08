@@ -9,67 +9,105 @@ namespace SistemasOperacionais
 {
     internal class MemoriaVirtual
     {
-        private int TamanhoPagina = 32; // Define o tamanho de cada página (32 posições de memória)
-        private int MemoriaTotal; // Armazena a quantidade total de memória disponível
-        private int NumeroPaginas; // Calcula o número total de páginas disponíveis na memória
-        private List<Pagina> Paginas; // Lista de todas as páginas disponíveis na memória
-        public MemoriaVirtual(int memoriaTotal) {
-            MemoriaTotal = memoriaTotal; // Define a memória total do sistema
-            NumeroPaginas = memoriaTotal / TamanhoPagina; // Calcula o número de páginas possíveis na memória
-            Paginas = new List<Pagina>(); // Inicializa a lista de páginas vazia
+        private int tamanhoPagina; // Define o tamanho de cada página (32 posições de memória)
+        //private int numeroPaginasLivre; // Calcula o número total de páginas disponíveis na memória
 
-            // Cria cada página e a adiciona à lista
-            for (int i = 0; i < NumeroPaginas; i++)
+        //private int memorialTotalLivre;
+        private List<Pagina> paginas;
+
+        public MemoriaVirtual(int numeroPagina, int tamanhoPagina)
+        {
+            this.tamanhoPagina = tamanhoPagina;
+
+            this.paginas = new List<Pagina>();
+            
+            for (int i = 0; i < numeroPagina; i++)
             {
-                Paginas.Add(new Pagina(i, TamanhoPagina, i * TamanhoPagina)); // Cria páginas com endereços inicializados
+                paginas.Add(new Pagina(i, tamanhoPagina, i * tamanhoPagina));
             }
 
-            Console.WriteLine($"Memória Virtual inicializada com {NumeroPaginas} páginas de {TamanhoPagina} endereços cada.");
-
+            Console.WriteLine($"Memória Virtual inicializada com {numeroPagina} páginas de {tamanhoPagina} endereços cada.");
         }
 
         // Método para encontrar uma página livre na memória
-        private List<Pagina> ObterPaginaLivre()
+        private List<Pagina> ObterPaginaLivre(int paginasNecessarias)
         {
-            List<Pagina> PaginasLivre = new List<Pagina>();
+            List<Pagina> paginasLivre = new List<Pagina>();
 
-            foreach (var pagina in Paginas)
+            foreach (var pagina in paginas)
             {
-                
                 if (!pagina.EmUso) // Verifica se a página está livre
                 {
-                    PaginasLivre.Add(pagina);// armazena pagina livre em vetor de paginas
+                    paginasLivre.Add(pagina);// armazena pagina livre em vetor de paginas
                     Console.WriteLine("pagina livre encontrada");//apenas teste de função
+
+                    // reduz o numero de iteracoes
+                    if (paginasLivre.Count >= paginasNecessarias)
+                    {
+                        break;
+                    }
                 }
             }
-            return PaginasLivre; // Retorna o numero de páginas livres
+            return paginasLivre; // Retorna o numero de páginas livres
         }
 
-        public void AlocarProcesso(Processo processo, int tamanho)
+        public bool AlocarProcesso(Processo processo)
         {
-            int paginasNecessarias = (int)Math.Ceiling(tamanho / (double)TamanhoPagina); // Calcula quantas páginas são necessárias para o processo
+            int tamanho = processo.MemoriaAlocada;
+            int paginasNecessarias = (int)Math.Ceiling(tamanho / (double)tamanhoPagina);
             Console.WriteLine($"Processo {processo.ProcID} requer {paginasNecessarias} páginas ({tamanho} posições de memória).");
 
-            List<Pagina>PaginasLivre = new List<Pagina>(); // Lista de paginas livres local
-            PaginasLivre = ObterPaginaLivre(); // Salva retorno de lista de paginas livres
-            if (paginasNecessarias <= PaginasLivre.Count) // Verifica se ha espaço na memoria Virtual
+            List<Pagina> paginasLivre = ObterPaginaLivre(paginasNecessarias);
+            if (paginasNecessarias <= paginasLivre.Count)
             {
-                foreach (Pagina pagina in PaginasLivre) {
-                    pagina.EmUso = true; // Marca a página como em uso
-                    pagina.ProcID = processo.ProcID; // Associa o processo atual à página.
-                    pagina.Referenciada = true; // Marca a página como referenciada (foi recentemente acessada).
+                for (int i = 0; i < paginasNecessarias; i++)
+                {
+                    paginasLivre[i].EmUso = true; // marca a página como em uso
+                    paginasLivre[i].ProcID = processo.ProcID; // associa o processo atual à página.
+                    paginasLivre[i].Referenciada = true; // marca a página como referenciada (foi recentemente acessada).
                 }
-                Console.WriteLine("tamanho apropriado encontrado para processo."); // Teste de função.
+                Console.WriteLine("Tamanho apropriado encontrado para processo.");
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public List<int> BuscaProcesso(int procID)
+        {
+            List<int> paginasUsadas = new List<int>();
+            foreach (var pag in paginas)
+            {
+                if (pag.ProcID == procID && pag.EmUso)
+                {
+                    paginasUsadas.Add(pag.Numero);
+                }
+            }
+
+            return paginasUsadas;
+        }
+
+        public void DesalocarProcesso(int procID) // Libera espaço na memoria após finalização de processo.
+        {
+            foreach (var pagina in paginas)
+            {
+                if (pagina.ProcID == procID) // Compara ID do processo com o salvo na memoria. 
+                {
+                    pagina.EmUso = false; // Marca a página como em uso.
+                    Console.WriteLine("Pagina Virtual " + pagina.Numero + " desalocada para o processo " + procID);
+                }
             }
         }
 
-        public void LiberarMemoria(Processo processo, List<Pagina>Paginas) // Libera espaço na memoria após finalização de processo.
+        public void ExibirMemoria()
         {
-            foreach (var pagina in Paginas) {
-                if (pagina.ProcID == processo.ProcID) // Compara ID do processo com o salvo na memoria. 
-                {
-                    pagina.EmUso = false; // Marca a página como em uso.
-                }
+            Console.WriteLine("Memoria Virtual: ");
+            foreach (Pagina pag in paginas)
+            {
+                pag.MostrarEnderecos();
             }
         }
     }

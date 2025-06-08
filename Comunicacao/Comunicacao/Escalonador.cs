@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 
 namespace SistemasOperacionais
 {
@@ -32,6 +33,7 @@ namespace SistemasOperacionais
         // se não há processo com ID e tipoEscalonador iguais
         // processo deve ser escalonado
         // lista reordenada
+        protected List<Processo> listaNew = new List<Processo>();
         protected List<Processo> listaReady = new List<Processo>();
         protected List<Processo> listaRunning = new List<Processo>();
         protected List<Processo> listaWaiting = new List<Processo>();
@@ -44,6 +46,16 @@ namespace SistemasOperacionais
         {
             if (listaReady.Count <= 0)
             {
+                if (listaNew.Count > 0)
+                {
+                    Processo novoProcesso = listaNew[0];
+                    if (Kernel.AlocarProcesso(novoProcesso))
+                    {
+                        listaReady.Add(novoProcesso);
+                        listaNew.Remove(novoProcesso);
+                    }
+                }
+
                 ExecutarProximoProcesso();
                 return;
             }
@@ -61,6 +73,8 @@ namespace SistemasOperacionais
             else
             {
                 // Processo vai para o final da lista do escalonador
+                // Ele ja esta na memoria virtual
+                // aguardando memoria fisica para poder executar
                 listaReady.Remove(processoAtual);
                 listaReady.Add(processoAtual);
                 ExecutarProximoProcesso();
@@ -88,12 +102,13 @@ namespace SistemasOperacionais
             }
             else if (resultado == -1)
             {
-                listaWaiting.Add(processoAtual);
-                processoAtual.Estado = "Waiting";
+                // Desalocar Recursos Fisico
+                AguardarProcesso();
             }
             AlocarProximoProcesso();
         }
 
+        /*
         public void InterromperProcesso()
         {
             listaReady.Add(processoAtual);
@@ -101,24 +116,32 @@ namespace SistemasOperacionais
             Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
 
             AlocarProximoProcesso();
-        }
+        }*/
 
         public void AguardarProcesso()
         {
+            // Running para Waiting
+            // Desalocar memoria fisica
+            // Mantem memoria virtual
+
+            Kernel.DesalocarMemoriaFisica(processoAtual);
+
             listaWaiting.Add(processoAtual);
             processoAtual.Estado = "Waiting";
-            Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
+            //Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
 
-            AlocarProximoProcesso();
+            //AlocarProximoProcesso();
         }
 
         public void AcordarProcesso(int procId)
         {
-            foreach(Processo p in listaWaiting)
+            foreach(Processo p in listaWaiting.ToList())
             {
+                // processo ja esta na memoria virtual
                 if (p.ProcID == procId){
                     p.Estado = "Ready";
                     listaReady.Add(p);
+                    listaWaiting.Remove(p);
 
                     break;
                 }
@@ -127,7 +150,7 @@ namespace SistemasOperacionais
 
         public void TerminarProcesso()
         {
-            Kernel.TerminarProcesso(processoAtual, this);
+            Kernel.DesalocarMemoria(processoAtual);
 
             processoAtual.Estado = "Terminated";
             Console.WriteLine(processoAtual.ProcID + ": " + processoAtual.Estado);
@@ -207,7 +230,7 @@ namespace SistemasOperacionais
             foreach (Processo p in listaProcessos)
             {
                 Processo temp = new EmLote(p.ProcID, p.TempoExecucao, p.MemoriaAlocada, p.Acoes);
-                listaReady.Add(temp);
+                listaNew.Add(temp);
             }
         }
     }

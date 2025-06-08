@@ -18,7 +18,7 @@
 
             Console.WriteLine(procID + ": " + estado);
 
-            Kernel.PopulateProcessQueue(this);
+            Kernel.PopularFilaProcessos(this);
         }
 
         public Processo(int procID, float tempoExecucao, int memoriaAlocada, List<int> acoes)
