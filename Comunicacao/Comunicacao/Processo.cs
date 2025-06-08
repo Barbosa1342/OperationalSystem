@@ -1,6 +1,6 @@
 ﻿namespace SistemasOperacionais
 {
-    abstract class Processo
+    public abstract class Processo
     {
         protected string estado;
         protected int procID;
